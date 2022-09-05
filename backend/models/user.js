@@ -27,5 +27,19 @@ function validateUser(user){
     
 }
 
-module.exports.User = User;
-module.exports.validateUser = validateUser;
+function validateUserLogins(userLogins){
+  const schema = Joi.object({
+    email : Joi.string().min(5).max(50).required().email().required(),
+    password :  Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required(),
+  });
+
+  const validate = schema.validate(userLogins);
+  console.log(validate);
+  return validate;
+}
+
+module.exports = {
+  User,
+  validateUser,
+  validateUserLogins,
+}

@@ -1,4 +1,4 @@
-const dotenv = require('dotenv').config({path:'../config/.env'});
+const dotenv = require('dotenv').config({path:'./.env'});
 
 const errorHandler = (err, req, res, next) => {
   //next();
