@@ -1,16 +1,24 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const asyncHandler = require("express-async-handler");
-const dotenv = require("dotenv").config({ path: "./.env" });
 const { User, validateUser, validateUserLogins } = require("../models/user");
-const { date } = require("joi");
+
 
 // @desc Get all users
 // @route GET /api/users
 // @access Private
 const getUsers = asyncHandler(async (req, res) => {
-  const users = await User.find().select('-password');
-  res.status(200).json(users);
+  if(!req.params.id){
+    const users = await User.find().select('-password');
+    res.status(200).json(users);
+  }else{
+    const user = await User.findById(req.params.id).select('-password');
+    if(user){
+      res.status(200).json(user);
+    }else{
+      throw new Error('User not found');
+    }
+  }
 });
 
 // @desc Register user
@@ -105,7 +113,6 @@ const loginUser = asyncHandler(async (req, res) => {
 // @route GET /api/users/user
 // @access Private
 const getUser = asyncHandler(async (req, res) => {
-    console.log(req.user.id);
   const {
     _id,
     first_name,
@@ -143,7 +150,7 @@ const updateUser = asyncHandler(async (req, res) => {
   try {
     user = await User.findById(req.params.id);
   } catch (error) {
-    //console.log(error)
+    console.log(error)
   }
   if (user == undefined) {
     res.status(400);
@@ -169,7 +176,7 @@ const updateUser = asyncHandler(async (req, res) => {
 });
 
 // @desc Delete user
-// @route GET /api/users/:id
+// @route DELETE /api/users/:id
 // @access Private
 const deleteUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
