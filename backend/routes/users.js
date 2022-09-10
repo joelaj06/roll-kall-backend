@@ -8,13 +8,15 @@ const {
   getUser,
 } = require("../controllers/users_controller.js");
 const { protect } = require("../middleware/auth_middleware");
+const {checkPermission} = require('../middleware/permission_middleware')
 
 const router = express.Router();
 
 router.post("/", addUser);
 router.post("/login", loginUser);
 router.get("/user", protect, getUser);
-router.get("/:id?",protect,getUsers);
-router.route("/:id").put(protect,updateUser).delete(protect,deleteUser);
+router.get("/:id?",protect,checkPermission('CanViewUsers'),getUsers);
+router.route("/:id").put(protect,checkPermission('CanUpdateUser'),updateUser)
+.delete(protect,checkPermission('CanDeleteUser'),deleteUser);
 
 module.exports = router;

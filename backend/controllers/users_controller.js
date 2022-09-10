@@ -3,20 +3,19 @@ const bcrypt = require("bcryptjs");
 const asyncHandler = require("express-async-handler");
 const { User, validateUser, validateUserLogins } = require("../models/user");
 
-
 // @desc Get all users
 // @route GET /api/users
 // @access Private
 const getUsers = asyncHandler(async (req, res) => {
-  if(!req.params.id){
-    const users = await User.find().select('-password');
+  if (!req.params.id) {
+    const users = await User.find().select("-password").populate('role');
     res.status(200).json(users);
-  }else{
-    const user = await User.findById(req.params.id).select('-password');
-    if(user){
+  } else {
+    const user = await User.findById(req.params.id).select("-password");
+    if (user) {
       res.status(200).json(user);
-    }else{
-      throw new Error('User not found');
+    } else {
+      throw new Error("User not found");
     }
   }
 });
@@ -28,49 +27,49 @@ const addUser = asyncHandler(async (req, res) => {
   const { error } = validateUser(req.body);
   if (error) {
     res.status(400).json({ message: error.details[0].message });
-  }
-
-  let user = await User.findOne({ email: req.body.email });
-  if (user) {
-    return res.status(400).json({ message: "User already exist!" });
   } else {
-    // hashing password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(req.body.password, salt);
-    user = new User({
-      first_name: req.body.first_name,
-      last_name: req.body.last_name,
-      email: req.body.email,
-      password: hashedPassword,
-      index_number: req.body.index_number,
-      phone: req.body.phone,
-      role_id: req.body.role_id,
-      address: req.body.address,
-      date_of_birth: req.body.date_of_birth,
-      programme: req.body.programme,
-      level: req.body.level,
-    });
-
-    await user.save();
-
+    let user = await User.findOne({ email: req.body.email });
     if (user) {
-      res.status(201).json({
-        _id: user.id,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        email: user.email,
-        index_number: user.index_number,
-        phone: user.phone,
-        role_id: user.role_id,
-        address: user.address,
-        date_of_birth: user.date_of_birth,
-        programme: user.programme,
-        level: user.level,
-        token: generateToken(user._id),
-      });
+      return res.status(400).json({ message: "User already exist!" });
     } else {
-      res.status(400);
-      throw new Error("Invalid user");
+      // hashing password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(req.body.password, salt);
+      user = new User({
+        first_name: req.body.first_name,
+        last_name: req.body.last_name,
+        email: req.body.email,
+        password: hashedPassword,
+        index_number: req.body.index_number,
+        phone: req.body.phone,
+        role: req.body.role,
+        address: req.body.address,
+        date_of_birth: req.body.date_of_birth,
+        programme: req.body.programme,
+        level: req.body.level,
+      });
+
+      await user.save();
+
+      if (user) {
+        res.status(201).json({
+          _id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          email: user.email,
+          index_number: user.index_number,
+          phone: user.phone,
+          role: user.role,
+          address: user.address,
+          date_of_birth: user.date_of_birth,
+          programme: user.programme,
+          level: user.level,
+          token: generateToken(user._id),
+        });
+      } else {
+        res.status(400);
+        throw new Error("Invalid user");
+      }
     }
   }
 });
@@ -84,28 +83,28 @@ const loginUser = asyncHandler(async (req, res) => {
   const { error } = validateUserLogins(req.body);
   if (error) {
     res.status(400).json({ message: error.details[0].message });
-  }
-
-  const user = await User.findOne({ email });
-
-  if (user && (await bcrypt.compare(password, user.password))) {
-    res.status(201).json({
-      _id: user.id,
-      first_name: user.first_name,
-      last_name: user.last_name,
-      email: user.email,
-      index_number: user.index_number,
-      phone: user.phone,
-      role_id: user.role_id,
-      address: user.address,
-      date_of_birth: user.date_of_birth,
-      programme: user.programme,
-      level: user.level,
-      token: generateToken(user._id),
-    });
   } else {
-    res.status(400);
-    throw new Error("Invalid credentials");
+    const user = await User.findOne({ email });
+
+    if (user && (await bcrypt.compare(password, user.password))) {
+      res.status(201).json({
+        _id: user.id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        index_number: user.index_number,
+        phone: user.phone,
+        role: user.role,
+        address: user.address,
+        date_of_birth: user.date_of_birth,
+        programme: user.programme,
+        level: user.level,
+        token: generateToken(user._id),
+      });
+    } else {
+      res.status(400);
+      throw new Error("Invalid credentials");
+    }
   }
 });
 
@@ -120,12 +119,12 @@ const getUser = asyncHandler(async (req, res) => {
     email,
     index_number,
     phone,
-    role_id,
+    role,
     address,
     date_of_birth,
     programme,
     level,
-  } = await User.findById(req.user.id);
+  } = await User.findById(req.user.id).populate('role');
 
   res.status(200).json({
     id: _id,
@@ -134,7 +133,7 @@ const getUser = asyncHandler(async (req, res) => {
     email: email,
     index_number: index_number,
     phone: phone,
-    role_id: role_id,
+    role: role,
     address: address,
     date_of_birth: date_of_birth,
     programme: programme,
@@ -150,7 +149,7 @@ const updateUser = asyncHandler(async (req, res) => {
   try {
     user = await User.findById(req.params.id);
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
   if (user == undefined) {
     res.status(400);
@@ -166,7 +165,7 @@ const updateUser = asyncHandler(async (req, res) => {
       email: updatedUser.email,
       index_number: updatedUser.index_number,
       phone: updatedUser.phone,
-      role_id: updatedUser.role_id,
+      role: updatedUser.role,
       address: updatedUser.address,
       date_of_birth: updatedUser.date_of_birth,
       programme: updatedUser.programme,

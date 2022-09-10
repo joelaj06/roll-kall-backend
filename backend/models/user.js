@@ -14,7 +14,7 @@ function validateUser(user){
         confirmPassword: Joi.ref('password'),
         index_number : Joi.string().min(5).max(50).required(), 
         phone : Joi.string().min(10).max(15).required() , 
-        role_id : Joi.number().required(),
+        role : Joi.string().required(),
         address : Joi.string().min(5).max(50).required(), 
         programme : Joi.string().min(5).max(50).required(),
         level : Joi.string().min(1).max(50).required(), 

@@ -3,7 +3,7 @@ const {connectToDatabase} = require('./backend/config/conn.js');
 const users = require('./backend/routes/users');
 const {errorHandler }= require('./backend/middleware/error_middleware.js');
 const attendance_dates = require('./backend/routes/attendance_dates');
-
+const roles = require('./backend/routes/roles');
 
 const app = express();
 
@@ -16,6 +16,7 @@ const port = process.env.PORT || 3000;
 
 app.use('/api/users', users);
 app.use('/api/attendance_dates', attendance_dates);
+app.use('/api/roles',roles);
 
 app.use(errorHandler);
 
