@@ -9,10 +9,10 @@ const { checkPermission } = require("../middleware/permission_middleware");
 
 const router = express.Router();
 
-router.post("/", protect, checkIn);
+router.post("/", protect,checkPermission("CanClockIn"), checkIn);
 router
   .route("/:id")
   .get(protect, checkPermission("CanViewAttendanceHistory"), getUserDates)
-  .put(protect, checkOut);
+  .put(protect,checkPermission("CanClockOut") ,checkOut);
 
 module.exports = router;

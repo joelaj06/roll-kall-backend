@@ -183,15 +183,14 @@ const deleteUser = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("User not found");
   }
-  await User.deleteOne(user);
+  await user.remove();
   res.status(200).json({ id: req.params.id });
 });
 
 // Generate JWT
-
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRETE, {
-    expiresIn: "30d",
+    expiresIn: "3d",
   });
 };
 

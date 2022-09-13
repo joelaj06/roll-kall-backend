@@ -7,7 +7,7 @@ const { Role } = require("../models/role.js");
 const getRoles = asyncHandler(async (req, res) => {
   if (!req.params.id) {
     const roles = await Role.find();
-    res.status(200).json({ roles });
+    res.status(200).json(roles );
   } else {
     const role = await Role.findById(req.params.id);
     res.status(200).json( role );
@@ -57,7 +57,7 @@ const updateRole = asyncHandler(async (req, res) => {
 const deleteRole = asyncHandler(async (req, res) => {
   const role = await Role.findById(req.params.id);
   if (role) {
-    await Role.deleteOne(role);
+    await role.remove();
     res.status(200).json(req.params.id);
   } else {
     res.status(400);
