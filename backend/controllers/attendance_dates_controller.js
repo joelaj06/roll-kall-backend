@@ -1,6 +1,6 @@
 const asyncHandler = require("express-async-handler");
-const { AttendanceDate } = require("../models/attendance_date.js");
-const { User } = require("../models/user.js");
+const { AttendanceDate } = require("../models/attendance_date_model.js");
+const { User } = require("../models/user_model.js");
 const { addDays } = require("../utils/date_formatter.js");
 
 // @desc - get user's check in time

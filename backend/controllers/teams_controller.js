@@ -1,5 +1,5 @@
 const asyncHandler = require('express-async-handler');
-const {Team} = require('../models/team')
+const {Team} = require('../models/team_model')
 
 
 //@desc Get all available teams
