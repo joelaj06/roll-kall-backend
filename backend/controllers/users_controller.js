@@ -1,14 +1,18 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const asyncHandler = require("express-async-handler");
-const { User, validateUser, validateUserLogins } = require("../models/user_model");
+const {
+  User,
+  validateUser,
+  validateUserLogins,
+} = require("../models/user_model");
 
 // @desc Get all users
 // @route GET /api/users
 // @access Private
 const getUsers = asyncHandler(async (req, res) => {
   if (!req.params.id) {
-    const users = await User.find().select("-password").populate('role');
+    const users = await User.find().select("-password").populate("role");
     res.status(200).json(users);
   } else {
     const user = await User.findById(req.params.id).select("-password");
@@ -85,8 +89,24 @@ const loginUser = asyncHandler(async (req, res) => {
     res.status(400).json({ message: error.details[0].message });
   } else {
     const user = await User.findOne({ email });
-
     if (user && (await bcrypt.compare(password, user.password))) {
+
+      const token = generateToken(user._id);
+      
+      let oldTokens = user.tokens || [];
+
+      if(oldTokens.length){
+        oldTokens = oldTokens.filter((token) => {
+          const timeDiff = (Date.now() - parseInt(token.signedAt))/1000;
+          if(timeDiff < 86400){
+            return token;
+          }
+        })
+      }
+
+      await User.findByIdAndUpdate(user._id, {
+        tokens: [...oldTokens,{token, signedAt: Date.now().toString() }],
+      });
       res.status(201).json({
         _id: user.id,
         first_name: user.first_name,
@@ -99,8 +119,9 @@ const loginUser = asyncHandler(async (req, res) => {
         date_of_birth: user.date_of_birth,
         programme: user.programme,
         level: user.level,
-        token: generateToken(user._id),
+        token: token,
       });
+      
     } else {
       res.status(400);
       throw new Error("Invalid credentials");
@@ -124,7 +145,7 @@ const getUser = asyncHandler(async (req, res) => {
     date_of_birth,
     programme,
     level,
-  } = await User.findById(req.user.id).populate('role');
+  } = await User.findById(req.user.id).populate("role");
 
   res.status(200).json({
     id: _id,
@@ -190,10 +211,28 @@ const deleteUser = asyncHandler(async (req, res) => {
 // Generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRETE, {
-    expiresIn: "3d",
+    expiresIn: "1d",
   });
 };
 
+
+const logout = asyncHandler( async(req, res) => {
+   if(req.headers && req.headers.authorization){
+    let token = req.headers.authorization.split(' ')[1];
+    if(!token){
+      return res.status(401).json({message: 'Authorization failed'});
+    }else{
+      const tokens = req.user.tokens;
+      const newTokens = tokens.filter((t) => {
+        t.token != token;
+      });
+
+      await User.findByIdAndUpdate(req.user._id, {tokens : newTokens});
+
+      res.status(200).json({message: 'User logged out successfully'})
+    }
+   }
+})
 module.exports = {
   getUsers,
   addUser,
@@ -201,4 +240,7 @@ module.exports = {
   deleteUser,
   loginUser,
   getUser,
+  logout
 };
+
+

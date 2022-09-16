@@ -15,14 +15,7 @@ const userSchema = new mongoose.Schema({
   date_of_birth : Date,
   programme : String,
   level : String, 
-  // attendance_date :[ {
-  //   type : mongoose.SchemaTypes.ObjectId,
-  //   ref : "AttendanceDate"
-  // }]
-  // createdAt : {
-  //   type : Date,
-  //   default : Date.now
-  // }, 
+  tokens : [{type : Object}]
   
 },{
   timestamps: true
