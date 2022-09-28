@@ -4,4 +4,15 @@ function addDays(date, days) {
     return result;
   }
 
-  module.exports = {addDays}
+  function getLastDate(date, days) {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate() - days);
+  }
+
+  function getPreviousDateByDays(date, days){
+  var result = new Date(date);
+  result.setDate(result.getDate() - days);
+  return result.toISOString().split('T')[0];
+  }
+  
+
+  module.exports = {addDays, getLastDate, getPreviousDateByDays}
