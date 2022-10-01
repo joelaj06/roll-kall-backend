@@ -17,8 +17,8 @@ const addLeave = asyncHandler(async (req, res) => {
       const leave = new Leave({
         user,
         notes,
-        status, 
-        date
+        status,
+        date,
       });
 
       await leave.save();
@@ -97,19 +97,19 @@ const getUserLeaves = asyncHandler(async (req, res) => {
 const updateLeave = asyncHandler(async (req, res) => {
   const leave = await Leave.findById(req.params.id);
   if (leave) {
-    if(leave.status === "pending"){
-        const newLeave = await Leave.findByIdAndUpdate(req.params.id, req.body, {
-            new: true,
-          });
-          if (newLeave) {
-            res.status(200).json(newLeave);
-          } else {
-            res.status(400);
-            throw new Error("Failed to update leave");
-          }
-    }else{
-        res.status(200);
-        throw new Error("Update Failed, Leave already approved")
+    if (leave.status === "pending") {
+      const newLeave = await Leave.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+      });
+      if (newLeave) {
+        res.status(200).json(newLeave);
+      } else {
+        res.status(400);
+        throw new Error("Failed to update leave");
+      }
+    } else {
+      res.status(200);
+      throw new Error("Update Failed, Leave already approved");
     }
   } else {
     res.status(400);
@@ -131,7 +131,28 @@ const deleteLeave = asyncHandler(async (req, res) => {
   }
 });
 
-
+//@desc get list of all leave request
+//@route GET /api/leaves/request
+//@access PRIVATE
+const getLeaveRequest = asyncHandler(async (req, res) => {
+  let leave;
+  if (!req.query.date_filter) {
+    leave = await Leave.find({ status: "pending" });
+  } else {
+    let endDate = addDays(req.query.end_date, 1);
+    let startDate = req.query.start_date;
+    leave = await Leave.find({
+      status: "pending",
+      createdAt: { $gte: startDate, $lte: endDate },
+    });
+  }
+  if (leave) {
+    res.status(200).json(leave);
+  } else {
+    res.status(400);
+    throw new Error("Failed to fetch leave requests");
+  }
+});
 
 module.exports = {
   addLeave,
@@ -139,4 +160,5 @@ module.exports = {
   updateLeave,
   deleteLeave,
   getUserLeaves,
+  getLeaveRequest,
 };
