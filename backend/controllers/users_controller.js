@@ -106,7 +106,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
       await User.findByIdAndUpdate(user._id, {
         tokens: [...oldTokens,{token, signedAt: Date.now().toString() }],
-      });
+      }).populate("role");
       res.status(201).json({
         _id: user.id,
         first_name: user.first_name,

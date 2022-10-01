@@ -1,6 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const { AttendanceDate } = require("../models/attendance_date_model");
-const { getLastDate, addDays, getPreviousDateByDays } = require("../utils/date_formatter");
+const { getLastDate, getPreviousDateByDays } = require("../utils/date_formatter");
 
 //@desc get weekly report of active users
 //@route GET /api/getUsersOfTheWeek
@@ -8,7 +8,6 @@ const { getLastDate, addDays, getPreviousDateByDays } = require("../utils/date_f
 
 const getUsersOfTheWeek = asyncHandler(async (req, res) => {
     
-    let unsortedDates = [];
     let unsortedUsers = []
     let dates = [];
     let users = [0,0,0,0,0,0,0];
@@ -41,7 +40,6 @@ const getUsersOfTheWeek = asyncHandler(async (req, res) => {
       $group: {
         _id: {
           date: "$convertedDate",
-        //  convertedDate : "$convertedDate"
         },
         count: { $sum: 1 },
       },
