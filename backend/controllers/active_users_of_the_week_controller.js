@@ -49,7 +49,6 @@ const getUsersOfTheWeek = asyncHandler(async (req, res) => {
   ]);
 
   if (activeUsers) {
-    console.log(activeUsers)
     activeUsers.map((activeUser) => {
         unsortedUsers.push(activeUser.count);
       
