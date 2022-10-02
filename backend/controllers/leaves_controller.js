@@ -59,6 +59,22 @@ const getLeaves = asyncHandler(async (req, res) => {
       leaves = await Leave.find({
         createdAt: { $gte: startDate, $lte: endDate },
       }).populate("user", "-password -tokens");
+
+    } else if (req.query.category_filter) {
+      let category = req.query.category;
+      leaves = await Leave.find({
+        status: category,
+      }).populate("user", "-password -tokens");
+
+    } else if (req.query.category_filter && req.query.date_filter) {
+      let endDate = addDays(req.query.end_date, 1);
+      let startDate = req.query.start_date;
+      let category = req.query.category;
+      leaves = await Leave.find({
+        createdAt: { $gte: startDate, $lte: endDate },
+        status: category,
+      }).populate("user", "-password -tokens");
+      
     } else {
       leaves = await Leave.find().populate("user", "-password -tokens");
     }
