@@ -13,6 +13,10 @@ const attendance_date_schema = new mongoose.Schema(
       type: mongoose.SchemaTypes.ObjectId,
       ref: "User",
     },
+    completed : {
+      type : Boolean,
+      default : false
+    }
   },
   {
     timestamps: true,

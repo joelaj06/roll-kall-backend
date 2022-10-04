@@ -36,6 +36,7 @@ const checkOut = asyncHandler(async(req, res) => {
         if (user == undefined) {
           throw new Error("User not found");
         } else {
+          if(user.completed) throw new Error('User already checked out');
           if(user.id == attendanceDate.user){
               const updatedCheckOut = await AttendanceDate.findByIdAndUpdate(
                 req.params.id,

@@ -1,11 +1,13 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const asyncHandler = require("express-async-handler");
+const fs = require('fs');
 const {
   User,
   validateUser,
   validateUserLogins,
 } = require("../models/user_model");
+const { getRandomValues } = require("crypto");
 
 // @desc Get all users
 // @route GET /api/users
@@ -51,6 +53,8 @@ const addUser = asyncHandler(async (req, res) => {
         date_of_birth: req.body.date_of_birth,
         programme: req.body.programme,
         level: req.body.level,
+        imgUrl : req.body.imgUrl,
+        gender : req.body.gender
       });
 
       await user.save();
@@ -68,6 +72,8 @@ const addUser = asyncHandler(async (req, res) => {
           date_of_birth: user.date_of_birth,
           programme: user.programme,
           level: user.level,
+          gender : user.gender,
+          imgUrl : user.imgUrl,
           token: generateToken(user._id),
         });
       } else {

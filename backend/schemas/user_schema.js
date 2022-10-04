@@ -15,8 +15,11 @@ const userSchema = new mongoose.Schema({
   date_of_birth : Date,
   programme : String,
   level : String, 
-  tokens : [{type : Object}]
-  
+  tokens : [{type : Object}],
+  work_id : String,
+  imgUrl : String,
+  gender : String,
+
 },{
   timestamps: true
 });
