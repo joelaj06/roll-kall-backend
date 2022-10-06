@@ -16,8 +16,8 @@ const averageCheckInOfTheWeek = asyncHandler(async (req, res) => {
   let dates = [];
   dates = getAllPreviousDatesByDays(7);
 
-  let avgTimes = ["00:00","00:00","00:00","00:00","00:00","00:00","00:00"];
-
+  //let avgTimes = ["00:00","00:00","00:00","00:00","00:00","00:00","00:00"];
+   let avgTimes = [0,0,0,0,0,0,0];
   const attendanceDates = await AttendanceDate.find({
     createdAt: { $gte : getLastDate(now, 7)}
   });
@@ -54,7 +54,7 @@ const averageCheckInOfTheWeek = asyncHandler(async (req, res) => {
     }, []);
 
     const averageTimes = results.map(({checkIn, date}) => {
-      let avgCheckInTime = convertToHM(checkIn);
+      let avgCheckInTime = checkIn //convertToHM(checkIn);
       return {avgCheckInTime, date};
     });
 
@@ -76,8 +76,8 @@ const averageCheckOutOfTheWeek = asyncHandler(async (req, res) => {
   let dates = [];
   dates = getAllPreviousDatesByDays(7);
 
-  let avgTimes = ["00:00","00:00","00:00","00:00","00:00","00:00","00:00"];
-
+ // let avgTimes = ["00:00","00:00","00:00","00:00","00:00","00:00","00:00"];
+   let avgTimes = [0,0,0,0,0,0,0];
   const attendanceDates = await AttendanceDate.find({
     createdAt: { $gte : getLastDate(now, 7)}
   });
@@ -114,7 +114,7 @@ const averageCheckOutOfTheWeek = asyncHandler(async (req, res) => {
     }, []);
 
     const averageTimes = results.map(({checkOut, date}) => {
-      let avgCheckOutTime = convertToHM(checkOut);
+      let avgCheckOutTime = checkOut //convertToHM(checkOut);
       return {avgCheckOutTime, date};
     });
 
