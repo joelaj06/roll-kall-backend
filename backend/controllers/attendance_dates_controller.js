@@ -58,9 +58,11 @@ const checkOut = asyncHandler(async(req, res) => {
 // @route -  GET /api/attendance_dates
 // @access - PRIVATE
 const getUserDates = asyncHandler(async (req, res) => {
-
+  const page = req.query.page;
+  const limit = req.query.limit;
+  const startIndex = (page - 1) * limit;
   if(!req.query.date_filter){
-    const userDates = await AttendanceDate.find({ user: req.params.id });
+    const userDates = await AttendanceDate.find({ user: req.params.id }).limit(limit).skip(startIndex);
     if (userDates) {
       res.status(200).json(userDates);
     }

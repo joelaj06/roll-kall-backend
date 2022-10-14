@@ -1,20 +1,30 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const asyncHandler = require("express-async-handler");
-const fs = require('fs');
 const {
   User,
   validateUser,
   validateUserLogins,
 } = require("../models/user_model");
-const { getRandomValues } = require("crypto");
 
 // @desc Get all users
 // @route GET /api/users
 // @access Private
 const getUsers = asyncHandler(async (req, res) => {
   if (!req.params.id) {
-    const users = await User.find().select("-password").populate("role");
+    const page = req.query.page;
+    const limit = req.query.limit;
+    const startIndex = (page - 1) * limit;
+   // const endIndex = page * limit;
+    const users = await User.find({
+      "$or" :[
+        {first_name: {$regex :  new RegExp(`^${req.query.query}.*`,'i') }}, 
+        {first_name: {$regex : req.query.query ? req.query.query : ''}},
+        {last_name: {$regex : req.query.query ? req.query.query : ''}},
+        {email: {$regex : req.query.query ? req.query.query : ''}},
+      ]
+    }).select("-password").populate("role").limit(limit).skip(startIndex);
+    
     res.status(200).json(users);
   } else {
     const user = await User.findById(req.params.id).select("-password");

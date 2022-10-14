@@ -7,12 +7,17 @@ const {Team} = require('../models/team_model')
 //@access PRIVATE
 const getTeams = asyncHandler(async(req, res) => {
     if(!req.params.id){
-        const teams = await Team.find({}).populate('members', '-password');
+        const page = req.query.page;
+        const limit = req.query.limit;
+        const startIndex = (page - 1) * limit;
+        const teams = await Team.find({}).populate('members', '-password')
+        .limit(limit).skip(startIndex);
         if(teams){
             res.status(200).json(teams);
         }
     }else{
-        const team = await Team.findById(req.params.id).populate('members', '-password');
+        const team = await Team.findById(req.params.id).populate('members', '-password')
+        .limit(limit).skip(startIndex);
         if(team){
             res.status(200).json(team);
         }else{

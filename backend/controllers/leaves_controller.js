@@ -40,11 +40,14 @@ const addLeave = asyncHandler(async (req, res) => {
 //@route GET /api/leaves
 //@access PRIVATE
 const getLeaves = asyncHandler(async (req, res) => {
+  const page = req.query.page;
+  const limit = req.query.limit;
+  const startIndex = (page - 1) * limit;
   if (req.params.id) {
     const leaves = await Leave.findById(req.params.id).populate(
       "user",
       "-password -tokens"
-    );
+    ).limit(limit).skip(startIndex);
     if (leaves) {
       res.status(200).json(leaves);
     } else {
@@ -58,7 +61,7 @@ const getLeaves = asyncHandler(async (req, res) => {
       let startDate = req.query.start_date;
       leaves = await Leave.find({
         createdAt: { $gte: startDate, $lte: endDate },
-      }).populate("user", "-password -tokens");
+      }).populate("user", "-password -tokens").limit(limit).skip(startIndex);
 
     } else if (req.query.category_filter) {
       let category = req.query.category;
@@ -73,10 +76,10 @@ const getLeaves = asyncHandler(async (req, res) => {
       leaves = await Leave.find({
         createdAt: { $gte: startDate, $lte: endDate },
         status: category,
-      }).populate("user", "-password -tokens");
+      }).populate("user", "-password -tokens").limit(limit).skip(startIndex);
       
     } else {
-      leaves = await Leave.find().populate("user", "-password -tokens");
+      leaves = await Leave.find().populate("user", "-password -tokens").limit(limit).skip(startIndex);
     }
 
     if (leaves) {
@@ -93,12 +96,15 @@ const getLeaves = asyncHandler(async (req, res) => {
 //@access PRIVATE
 
 const getUserLeaves = asyncHandler(async (req, res) => {
+  const page = req.query.page;
+  const limit = req.query.limit;
+  const startIndex = (page - 1) * limit;
   let user = await User.findById(req.params.id);
   if (!user) throw new Error("User not found");
   const leaves = await Leave.find({ user: req.params.id }).populate(
     "user",
     "-password -tokens"
-  );
+  ).limit(limit).skip(startIndex);
   if (leaves) {
     res.status(200).json(leaves);
   } else {
