@@ -5,7 +5,6 @@ const userSchema = new mongoose.Schema({
   last_name : String,
   email : String, 
   password : String,
-  index_number : String, 
   phone : String , 
   role : {
     type : mongoose.SchemaTypes.ObjectId,
@@ -14,11 +13,13 @@ const userSchema = new mongoose.Schema({
   address : String, 
   date_of_birth : Date,
   programme : String,
+  status : String,
   level : String, 
   tokens : [{type : Object}],
   work_id : String,
   imgUrl : String,
   gender : String,
+  job_title : String,
 
 },{
   timestamps: true

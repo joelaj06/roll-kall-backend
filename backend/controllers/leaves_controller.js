@@ -96,20 +96,43 @@ const getLeaves = asyncHandler(async (req, res) => {
 //@access PRIVATE
 
 const getUserLeaves = asyncHandler(async (req, res) => {
+ 
+  let endDate = addDays(req.query.end_date, 1);
+  let startDate = req.query.start_date;
   const page = req.query.page;
   const limit = req.query.limit;
   const startIndex = (page - 1) * limit;
+  
   let user = await User.findById(req.params.id);
   if (!user) throw new Error("User not found");
-  const leaves = await Leave.find({ user: req.params.id }).populate(
-    "user",
-    "-password -tokens"
-  ).limit(limit).skip(startIndex);
-  if (leaves) {
-    res.status(200).json(leaves);
-  } else {
-    res.status(400);
-    throw new Error("Failed to fetch leaves");
+
+ if ((req.query.category_filter && req.query.date_filter) && req.query.category !== 'all'){
+    let category = req.query.category;
+    const leaves = await Leave.find({ user: req.params.id, 
+    status : category,
+    createdAt: { $gte: startDate, $lte: endDate },}).populate(
+      "user",
+      "-password -tokens"
+    ).limit(limit).skip(startIndex);
+    if (leaves) {
+      res.status(200).json(leaves);
+    } else {
+      res.status(400);
+      throw new Error("Failed to fetch leaves");
+    }
+  }
+  else{
+    const leaves = await Leave.find({ user: req.params.id,
+      createdAt: { $gte: startDate, $lte: endDate }, }).populate(
+      "user",
+      "-password -tokens"
+    ).limit(limit).skip(startIndex);
+    if (leaves) {
+      res.status(200).json(leaves);
+    } else {
+      res.status(400);
+      throw new Error("Failed to fetch leaves");
+    }
   }
 });
 

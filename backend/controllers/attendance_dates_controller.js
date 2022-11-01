@@ -60,15 +60,16 @@ const checkOut = asyncHandler(async(req, res) => {
 const getUserDates = asyncHandler(async (req, res) => {
   const page = req.query.page;
   const limit = req.query.limit;
+  let endDate = addDays(req.query.end_date,1);
+  let startDate = req.query.start_date;
   const startIndex = (page - 1) * limit;
-  if(!req.query.date_filter){
-    const userDates = await AttendanceDate.find({ user: req.params.id }).limit(limit).skip(startIndex);
+  if(req.params.id){
+    const userDates = await AttendanceDate.find({ user: req.params.id
+    , createdAt : {$gte: startDate, $lte : endDate} }).limit(limit).skip(startIndex);
     if (userDates) {
       res.status(200).json(userDates);
     }
   }else{
-    let endDate = addDays(req.query.end_date,1);
-    let startDate = req.query.start_date;
     const userDates =
      await AttendanceDate.find({
       createdAt : {$gte: startDate, $lte : endDate}});

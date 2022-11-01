@@ -56,7 +56,6 @@ const addUser = asyncHandler(async (req, res) => {
         last_name: req.body.last_name,
         email: req.body.email,
         password: hashedPassword,
-        index_number: req.body.index_number,
         phone: req.body.phone,
         role: req.body.role,
         address: req.body.address,
@@ -64,7 +63,9 @@ const addUser = asyncHandler(async (req, res) => {
         programme: req.body.programme,
         level: req.body.level,
         imgUrl : req.body.imgUrl,
-        gender : req.body.gender
+        gender : req.body.gender,
+        job_title : req.body.job_title,
+        status : req.body.status
       });
 
       await user.save();
@@ -84,6 +85,8 @@ const addUser = asyncHandler(async (req, res) => {
           level: user.level,
           gender : user.gender,
           imgUrl : user.imgUrl,
+          job_title : user.job_title,
+          status : user.status,
           token: generateToken(user._id),
         });
       } else {
@@ -135,6 +138,7 @@ const loginUser = asyncHandler(async (req, res) => {
         date_of_birth: user.date_of_birth,
         programme: user.programme,
         level: user.level,
+        status : user.status,
         token: token,
       });
       
@@ -157,9 +161,11 @@ const getUser = asyncHandler(async (req, res) => {
     index_number,
     phone,
     role,
+    gender,
     address,
     date_of_birth,
     programme,
+    status,
     level,
   } = await User.findById(req.user.id).populate("role");
 
@@ -168,6 +174,7 @@ const getUser = asyncHandler(async (req, res) => {
     first_name: first_name,
     last_name: last_name,
     email: email,
+    gender: gender,
     index_number: index_number,
     phone: phone,
     role: role,
@@ -175,6 +182,7 @@ const getUser = asyncHandler(async (req, res) => {
     date_of_birth: date_of_birth,
     programme: programme,
     level: level,
+    status: status
   });
 });
 
@@ -199,6 +207,7 @@ const updateUser = asyncHandler(async (req, res) => {
       _id: updatedUser.id,
       first_name: updatedUser.first_name,
       last_name: updatedUser.last_name,
+      imgUrl : updatedUser.imgUrl,
       email: updatedUser.email,
       index_number: updatedUser.index_number,
       phone: updatedUser.phone,
@@ -207,6 +216,7 @@ const updateUser = asyncHandler(async (req, res) => {
       date_of_birth: updatedUser.date_of_birth,
       programme: updatedUser.programme,
       level: updatedUser.level,
+      status : updatedUser.status
     });
   }
 });
@@ -227,7 +237,7 @@ const deleteUser = asyncHandler(async (req, res) => {
 // Generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRETE, {
-    expiresIn: "1d",
+    expiresIn: "10d",
   });
 };
 
