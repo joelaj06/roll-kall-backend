@@ -1,18 +1,15 @@
-const dotenv = require('dotenv').config({path:'./.env'});
-const mongodb = require('mongodb');
-const mongoose = require('mongoose');
-
+const dotenv = require("dotenv").config({ path: "./.env" });
+const mongodb = require("mongodb");
+const mongoose = require("mongoose");
 
 const connectToDatabase = async () => {
-    try{
-        const conn = await mongoose.connect(process.env.ATLAS_URI , {useNewUrlParser : true});
-        console.log(`Connected to Database ${conn.connection.host}`);
-    }catch(err){
-        console.log(err);
-        process.exit();
-    }
-}
+  try {
+    const conn = await mongoose.connect(process.env.ATLAS_URI);
+    console.log(`Connected to Database ${conn.connection.host}`);
+  } catch (err) {
+    console.log(err);
+    process.exit();
+  }
+};
 
-
-module.exports = {connectToDatabase}
-
+module.exports = { connectToDatabase };

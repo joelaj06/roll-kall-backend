@@ -15,16 +15,20 @@ const getUsers = asyncHandler(async (req, res) => {
     const page = req.query.page;
     const limit = req.query.limit;
     const startIndex = (page - 1) * limit;
-   // const endIndex = page * limit;
+    // const endIndex = page * limit;
     const users = await User.find({
-      "$or" :[
-        {first_name: {$regex :  new RegExp(`^${req.query.query}.*`,'i') }}, 
-        {first_name: {$regex : req.query.query ? req.query.query : ''}},
-        {last_name: {$regex : req.query.query ? req.query.query : ''}},
-        {email: {$regex : req.query.query ? req.query.query : ''}},
-      ]
-    }).select("-password").populate("role").limit(limit).skip(startIndex);
-    
+      $or: [
+        { first_name: { $regex: new RegExp(`^${req.query.query}.*`, "i") } },
+        { first_name: { $regex: req.query.query ? req.query.query : "" } },
+        { last_name: { $regex: req.query.query ? req.query.query : "" } },
+        { email: { $regex: req.query.query ? req.query.query : "" } },
+      ],
+    })
+      .select("-password")
+      .populate("role")
+      .limit(limit)
+      .skip(startIndex);
+
     res.status(200).json(users);
   } else {
     const user = await User.findById(req.params.id).select("-password");
@@ -42,7 +46,7 @@ const getUsers = asyncHandler(async (req, res) => {
 const addUser = asyncHandler(async (req, res) => {
   const { error } = validateUser(req.body);
   if (error) {
-    res.status(400).json({ message: error.details[0].message });
+    res.status(400).json({ message: "Cannot process resquest, invalid field" });
   } else {
     let user = await User.findOne({ email: req.body.email });
     if (user) {
@@ -62,10 +66,10 @@ const addUser = asyncHandler(async (req, res) => {
         date_of_birth: req.body.date_of_birth,
         programme: req.body.programme,
         level: req.body.level,
-        imgUrl : req.body.imgUrl,
-        gender : req.body.gender,
-        job_title : req.body.job_title,
-        status : req.body.status
+        imgUrl: req.body.imgUrl,
+        gender: req.body.gender,
+        job_title: req.body.job_title,
+        status: req.body.status,
       });
 
       await user.save();
@@ -83,10 +87,10 @@ const addUser = asyncHandler(async (req, res) => {
           date_of_birth: user.date_of_birth,
           programme: user.programme,
           level: user.level,
-          gender : user.gender,
-          imgUrl : user.imgUrl,
-          job_title : user.job_title,
-          status : user.status,
+          gender: user.gender,
+          imgUrl: user.imgUrl,
+          job_title: user.job_title,
+          status: user.status,
           token: generateToken(user._id),
         });
       } else {
@@ -102,29 +106,27 @@ const addUser = asyncHandler(async (req, res) => {
 // @access Public
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-
   const { error } = validateUserLogins(req.body);
   if (error) {
     res.status(400).json({ message: error.details[0].message });
   } else {
     const user = await User.findOne({ email });
     if (user && (await bcrypt.compare(password, user.password))) {
-
       const token = generateToken(user._id);
-      
+
       let oldTokens = user.tokens || [];
 
-      if(oldTokens.length){
+      if (oldTokens.length) {
         oldTokens = oldTokens.filter((token) => {
-          const timeDiff = (Date.now() - parseInt(token.signedAt))/1000;
-          if(timeDiff < 86400){
+          const timeDiff = (Date.now() - parseInt(token.signedAt)) / 1000;
+          if (timeDiff < 86400) {
             return token;
           }
-        })
+        });
       }
 
       await User.findByIdAndUpdate(user._id, {
-        tokens: [...oldTokens,{token, signedAt: Date.now().toString() }],
+        tokens: [...oldTokens, { token, signedAt: Date.now().toString() }],
       }).populate("role");
       res.status(201).json({
         _id: user.id,
@@ -138,10 +140,9 @@ const loginUser = asyncHandler(async (req, res) => {
         date_of_birth: user.date_of_birth,
         programme: user.programme,
         level: user.level,
-        status : user.status,
+        status: user.status,
         token: token,
       });
-      
     } else {
       res.status(400);
       throw new Error("Invalid credentials");
@@ -182,7 +183,7 @@ const getUser = asyncHandler(async (req, res) => {
     date_of_birth: date_of_birth,
     programme: programme,
     level: level,
-    status: status
+    status: status,
   });
 });
 
@@ -207,7 +208,7 @@ const updateUser = asyncHandler(async (req, res) => {
       _id: updatedUser.id,
       first_name: updatedUser.first_name,
       last_name: updatedUser.last_name,
-      imgUrl : updatedUser.imgUrl,
+      imgUrl: updatedUser.imgUrl,
       email: updatedUser.email,
       index_number: updatedUser.index_number,
       phone: updatedUser.phone,
@@ -216,7 +217,7 @@ const updateUser = asyncHandler(async (req, res) => {
       date_of_birth: updatedUser.date_of_birth,
       programme: updatedUser.programme,
       level: updatedUser.level,
-      status : updatedUser.status
+      status: updatedUser.status,
     });
   }
 });
@@ -241,24 +242,23 @@ const generateToken = (id) => {
   });
 };
 
-
-const logout = asyncHandler( async(req, res) => {
-   if(req.headers && req.headers.authorization){
-    let token = req.headers.authorization.split(' ')[1];
-    if(!token){
-      return res.status(401).json({message: 'Authorization failed'});
-    }else{
+const logout = asyncHandler(async (req, res) => {
+  if (req.headers && req.headers.authorization) {
+    let token = req.headers.authorization.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ message: "Authorization failed" });
+    } else {
       const tokens = req.user.tokens;
       const newTokens = tokens.filter((t) => {
         t.token != token;
       });
 
-      await User.findByIdAndUpdate(req.user._id, {tokens : newTokens});
+      await User.findByIdAndUpdate(req.user._id, { tokens: newTokens });
 
-      res.status(200).json({message: 'User logged out successfully'})
+      res.status(200).json({ message: "User logged out successfully" });
     }
-   }
-})
+  }
+});
 module.exports = {
   getUsers,
   addUser,
@@ -266,7 +266,5 @@ module.exports = {
   deleteUser,
   loginUser,
   getUser,
-  logout
+  logout,
 };
-
-
