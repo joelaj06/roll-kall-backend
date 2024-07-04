@@ -1,5 +1,9 @@
 const express = require("express");
-const { getDashboardSummary } = require("../controllers/dashboard_controller");
+const {
+  getDashboardSummary,
+  getOnTimeRecordOfTheWeek,
+  getCurrentPresentUsers,
+} = require("../controllers/dashboard_controller");
 const { protect } = require("../middleware/auth_middleware");
 const { checkPermission } = require("../middleware/permission_middleware");
 
@@ -10,6 +14,18 @@ router.get(
   protect,
   checkPermission("CanViewDashboardSummary"),
   getDashboardSummary
+);
+router.get(
+  "/onTimeRecordOfTheWeek",
+  protect,
+  checkPermission("CanViewOnTimeRecordOfTheWeek"),
+  getOnTimeRecordOfTheWeek
+);
+router.get(
+  "/currentPresentUsers",
+  protect,
+  checkPermission("CanViewOnCurrentPresentUsers"),
+  getCurrentPresentUsers
 );
 
 module.exports = router;
