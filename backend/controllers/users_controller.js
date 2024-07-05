@@ -13,21 +13,40 @@ const {
 const getUsers = asyncHandler(async (req, res) => {
   if (!req.params.id) {
     const page = req.query.page;
-    const limit = req.query.limit;
+    const limit = req.query.limit || 10;
     const startIndex = (page - 1) * limit;
     // const endIndex = page * limit;
-    const users = await User.find({
+    // Build the search query
+    const searchQuery = req.query.query ? req.query.query : "";
+    const searchCriteria = {
       $or: [
-        { first_name: { $regex: new RegExp(`^${req.query.query}.*`, "i") } },
-        { first_name: { $regex: req.query.query ? req.query.query : "" } },
-        { last_name: { $regex: req.query.query ? req.query.query : "" } },
-        { email: { $regex: req.query.query ? req.query.query : "" } },
+        { first_name: { $regex: new RegExp(`^${searchQuery}.*`, "i") } },
+        { last_name: { $regex: new RegExp(`^${searchQuery}.*`, "i") } },
+        { email: { $regex: new RegExp(`^${searchQuery}.*`, "i") } },
       ],
-    })
+    };
+
+    // Get the total count of matching documents
+    const totalCount = await User.countDocuments(searchCriteria);
+
+    // Get the matching users with pagination
+    const users = await User.find(searchCriteria)
       .select("-password")
       .populate("role")
       .limit(limit)
       .skip(startIndex);
+
+    // Calculate total pages
+    const totalPages = Math.ceil(totalCount / limit);
+    // Set pagination information in the headers
+    res.set(
+      "x-pagination",
+      JSON.stringify({
+        totalPages: totalPages,
+        pageCount: page,
+        totalCount: totalCount,
+      })
+    );
 
     res.status(200).json(users);
   } else {

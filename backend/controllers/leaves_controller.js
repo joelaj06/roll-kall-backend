@@ -44,10 +44,10 @@ const getLeaves = asyncHandler(async (req, res) => {
   const limit = req.query.limit;
   const startIndex = (page - 1) * limit;
   if (req.params.id) {
-    const leaves = await Leave.findById(req.params.id).populate(
-      "user",
-      "-password -tokens"
-    ).limit(limit).skip(startIndex);
+    const leaves = await Leave.findById(req.params.id)
+      .populate("user", "-password -tokens")
+      .limit(limit)
+      .skip(startIndex);
     if (leaves) {
       res.status(200).json(leaves);
     } else {
@@ -61,25 +61,31 @@ const getLeaves = asyncHandler(async (req, res) => {
       let startDate = req.query.start_date;
       leaves = await Leave.find({
         createdAt: { $gte: startDate, $lte: endDate },
-      }).populate("user", "-password -tokens").limit(limit).skip(startIndex);
-
-    } else if (req.query.category_filter) {
-      let category = req.query.category;
+      })
+        .populate("user", "-password -tokens")
+        .limit(limit)
+        .skip(startIndex);
+    } else if (req.query.status_filter) {
+      let status = req.query.status;
       leaves = await Leave.find({
-        status: category,
+        status: status,
       }).populate("user", "-password -tokens");
-
-    } else if (req.query.category_filter && req.query.date_filter) {
+    } else if (req.query.status_filter && req.query.date_filter) {
       let endDate = addDays(req.query.end_date, 1);
       let startDate = req.query.start_date;
-      let category = req.query.category;
+      let status = req.query.status;
       leaves = await Leave.find({
         createdAt: { $gte: startDate, $lte: endDate },
-        status: category,
-      }).populate("user", "-password -tokens").limit(limit).skip(startIndex);
-      
+        status: status,
+      })
+        .populate("user", "-password -tokens")
+        .limit(limit)
+        .skip(startIndex);
     } else {
-      leaves = await Leave.find().populate("user", "-password -tokens").limit(limit).skip(startIndex);
+      leaves = await Leave.find()
+        .populate("user", "-password -tokens")
+        .limit(limit)
+        .skip(startIndex);
     }
 
     if (leaves) {
@@ -96,37 +102,58 @@ const getLeaves = asyncHandler(async (req, res) => {
 //@access PRIVATE
 
 const getUserLeaves = asyncHandler(async (req, res) => {
- 
   let endDate = addDays(req.query.end_date, 1);
   let startDate = req.query.start_date;
   const page = req.query.page;
   const limit = req.query.limit;
   const startIndex = (page - 1) * limit;
-  
+
   let user = await User.findById(req.params.id);
   if (!user) throw new Error("User not found");
-
- if ((req.query.category_filter && req.query.date_filter) && req.query.category !== 'all'){
-    let category = req.query.category;
-    const leaves = await Leave.find({ user: req.params.id, 
-    status : category,
-    createdAt: { $gte: startDate, $lte: endDate },}).populate(
-      "user",
-      "-password -tokens"
-    ).limit(limit).skip(startIndex);
+  let query = {};
+  if (
+    req.query.status_filter &&
+    req.query.date_filter &&
+    req.query.status !== "all"
+  ) {
+    let status = req.query.status;
+    if (startDate && endDate)
+      query = {
+        user: req.params.id,
+        status: status,
+        createdAt: { $gte: startDate, $lte: endDate },
+      };
+    else {
+      query = {
+        user: req.params.id,
+        status: status,
+      };
+    }
+    const leaves = await Leave.find(query)
+      .populate("user", "-password -tokens")
+      .limit(limit)
+      .skip(startIndex);
     if (leaves) {
       res.status(200).json(leaves);
     } else {
       res.status(400);
       throw new Error("Failed to fetch leaves");
     }
-  }
-  else{
-    const leaves = await Leave.find({ user: req.params.id,
-      createdAt: { $gte: startDate, $lte: endDate }, }).populate(
-      "user",
-      "-password -tokens"
-    ).limit(limit).skip(startIndex);
+  } else {
+    if (startDate && endDate)
+      query = {
+        user: req.params.id,
+        createdAt: { $gte: startDate, $lte: endDate },
+      };
+    else {
+      query = {
+        user: req.params.id,
+      };
+    }
+    const leaves = await Leave.find(query)
+      .populate("user", "-password -tokens")
+      .limit(limit)
+      .skip(startIndex);
     if (leaves) {
       res.status(200).json(leaves);
     } else {
