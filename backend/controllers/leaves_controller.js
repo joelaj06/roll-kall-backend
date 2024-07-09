@@ -40,60 +40,53 @@ const addLeave = asyncHandler(async (req, res) => {
 //@route GET /api/leaves
 //@access PRIVATE
 const getLeaves = asyncHandler(async (req, res) => {
-  const page = req.query.page;
-  const limit = req.query.limit;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
   const startIndex = (page - 1) * limit;
+  const { date_filter, end_date, start_date, status_filter, status } =
+    req.query;
+
+  let query = {};
   if (req.params.id) {
-    const leaves = await Leave.findById(req.params.id)
+    query._id = req.params.id;
+  } else {
+    if (date_filter) {
+      let endDate = addDays(end_date, 1);
+      query.createdAt = { $gte: new Date(start_date), $lte: new Date(endDate) };
+    }
+    if (status_filter) {
+      query.status = status;
+    }
+  }
+
+  try {
+    const totalCount = await Leave.countDocuments(query);
+    const leaves = await Leave.find(query)
       .populate("user", "-password -tokens")
       .limit(limit)
       .skip(startIndex);
-    if (leaves) {
-      res.status(200).json(leaves);
-    } else {
-      res.status(400);
-      throw new Error("Failed to fetch leaves");
-    }
-  } else {
-    let leaves;
-    if (req.query.date_filter) {
-      let endDate = addDays(req.query.end_date, 1);
-      let startDate = req.query.start_date;
-      leaves = await Leave.find({
-        createdAt: { $gte: startDate, $lte: endDate },
-      })
-        .populate("user", "-password -tokens")
-        .limit(limit)
-        .skip(startIndex);
-    } else if (req.query.status_filter) {
-      let status = req.query.status;
-      leaves = await Leave.find({
-        status: status,
-      }).populate("user", "-password -tokens");
-    } else if (req.query.status_filter && req.query.date_filter) {
-      let endDate = addDays(req.query.end_date, 1);
-      let startDate = req.query.start_date;
-      let status = req.query.status;
-      leaves = await Leave.find({
-        createdAt: { $gte: startDate, $lte: endDate },
-        status: status,
-      })
-        .populate("user", "-password -tokens")
-        .limit(limit)
-        .skip(startIndex);
-    } else {
-      leaves = await Leave.find()
-        .populate("user", "-password -tokens")
-        .limit(limit)
-        .skip(startIndex);
-    }
 
     if (leaves) {
+      const totalPages = Math.ceil(totalCount / limit);
+      // Set pagination information in the headers
+
+      res.set(
+        "x-pagination",
+        JSON.stringify({
+          totalPages: totalPages,
+          pageCount: page,
+          totalCount: totalCount,
+        })
+      );
+
       res.status(200).json(leaves);
     } else {
       res.status(400);
       throw new Error("Failed to fetch leaves");
     }
+  } catch (error) {
+    res.status(400);
+    throw new Error(error.message);
   }
 });
 
@@ -180,8 +173,8 @@ const updateLeave = asyncHandler(async (req, res) => {
         throw new Error("Failed to update leave");
       }
     } else {
-      res.status(200);
-      throw new Error("Update Failed, Leave already approved");
+      res.status(400);
+      throw new Error("Update Failed, Only pending leaves can be updated");
     }
   } else {
     res.status(400);
