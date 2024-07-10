@@ -12,6 +12,7 @@ const averageChecksOfTheWeek = require("./backend/routes/average_checks_of_the_w
 const leaves = require("./backend/routes/leaves");
 const leavesOfTheWeek = require("./backend/routes/leaves_of_the_week");
 const dashboard = require("./backend/routes/dasboard.js");
+const tasks = require("./backend/routes/tasks");
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use("/api/averageChecksOfTheWeek", averageChecksOfTheWeek);
 app.use("/api/leaves", leaves);
 app.use("/api/leavesOfTheWeek", leavesOfTheWeek);
 app.use("/api/dashboard", dashboard);
+app.use("/api/tasks", tasks);
 
 app.use(errorHandler);
 
