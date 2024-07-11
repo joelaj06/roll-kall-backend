@@ -13,6 +13,7 @@ const leaves = require("./backend/routes/leaves");
 const leavesOfTheWeek = require("./backend/routes/leaves_of_the_week");
 const dashboard = require("./backend/routes/dasboard.js");
 const tasks = require("./backend/routes/tasks");
+const reports = require("./backend/routes/reports");
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use("/api/leaves", leaves);
 app.use("/api/leavesOfTheWeek", leavesOfTheWeek);
 app.use("/api/dashboard", dashboard);
 app.use("/api/tasks", tasks);
+app.use("/api/reports", reports);
 
 app.use(errorHandler);
 
