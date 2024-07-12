@@ -72,7 +72,6 @@ const dailyAttendanceReportPDF = async (
       { label: "Location", property: "location", width: 100, renderer: null },
     ],
     datas: data.map((item) => {
-      console.log(item);
       return {
         name: item.name,
         date: item.date,
@@ -170,8 +169,83 @@ const attendanceSummaryReportPDF = async (
   doc.end();
 };
 
+const leaveManagementReportPDF = async (
+  title,
+  data,
+  organization,
+  dataCallback,
+  endCallback
+) => {
+  const doc = new PDFDocument({ margin: 30 });
+  doc.on("data", dataCallback);
+  doc.on("end", endCallback);
+  // Fetch and include the logo
+  if (organization.logo) {
+    const response = await axios.get(organization.logo, {
+      responseType: "arraybuffer",
+    });
+    const logo = Buffer.from(response.data, "binary");
+    doc.image(logo, { fit: [100, 100], align: "center" });
+  }
+
+  // Organization Information
+  doc.fontSize(12).font("Times-Roman");
+  doc.fontSize(14).text(organization.name, { align: "center" });
+  doc.fontSize(12).text(organization.motto, { align: "center" });
+  doc.fontSize(12).text(organization.address, { align: "center" });
+  doc.moveDown(2);
+
+  // Report Title
+  doc.fontSize(14).text(title, { align: "center" });
+  doc.moveDown(1);
+
+  const table = {
+    headers: [
+      { label: "Name", property: "name", width: 250, renderer: null },
+      {
+        label: "From",
+        property: "startDate",
+        width: 100,
+        renderer: null,
+      },
+      {
+        label: "To",
+        property: "endDate",
+        width: 100,
+        renderer: null,
+      },
+      {
+        label: "Status",
+        property: "status",
+        width: 100,
+        renderer: null,
+      },
+    ],
+    datas: data.map((item) => {
+      return {
+        name: item.name,
+        startDate: item.startDate,
+        endDate: item.endDate,
+        status: item.status,
+      };
+    }),
+  };
+
+  doc.table(table, {
+    prepareHeader: () => doc.font("Times-Roman").fontSize(10),
+    prepareRow: (row, indexColumn, indexRow, rectRow) => {
+      doc.font("Times-Roman").fontSize(10);
+      indexColumn === 0 &&
+        doc.addBackground(rectRow, indexRow % 2 ? "grey" : "white", 0.15);
+    },
+  });
+
+  doc.end();
+};
+
 module.exports = {
   createPDF,
   dailyAttendanceReportPDF,
   attendanceSummaryReportPDF,
+  leaveManagementReportPDF,
 };

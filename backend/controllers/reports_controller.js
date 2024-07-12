@@ -154,20 +154,51 @@ const generateGeolocationReport = asyncHandler(async (req, res) => {
   const { startDate, endDate } = req.query;
   try {
     const attendances = await AttendanceDate.find({
-      date: { $gte: startDate, $lte: endDate },
+      createdAt: { $gte: startDate, $lte: endDate },
     })
-      .populate("user", "name")
+      .populate("user")
       .lean();
 
+    // Fetch company information
+    const organization = await Organization.findOne().lean();
+
+    // Format and generate the PDF report
     const reportData = attendances.map((att) => ({
-      name: att.user.name,
+      name: `${att.user.first_name} ${att.user.last_name}`,
+      date: DateTime.fromISO(att.createdAt.toISOString()).toLocaleString({}),
       checkIn: att.check_in,
       checkOut: att.check_out,
-      location: `${att.location.lat}, ${att.location.long}`,
+      workingHours: calculateWorkingHours(att.check_in, att.check_out),
+      location: "Not set",
     }));
 
-    const path = createPdf("Geolocation Report", reportData);
-    res.download(path, "geolocation_report.pdf");
+    const stream = res.writeHead(200, {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": "inline",
+    });
+
+    const title = `Attendance Summary Report from ${DateTime.fromISO(
+      startDate
+    ).toLocaleString({
+      weekday: "short",
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    })} to ${DateTime.fromISO(endDate).toLocaleString({
+      weekday: "short",
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    })}`;
+
+    createPdf.dailyAttendanceReportPDF(
+      title,
+      "",
+      reportData,
+      organization,
+      (chunk) => stream.write(chunk),
+      () => stream.end()
+    );
   } catch (error) {
     res.status(400);
     throw new Error(error.message);
@@ -193,8 +224,8 @@ const generateAbsenteeismReport = asyncHandler(async (req, res) => {
       date: date,
     }));
 
-    const path = createPdf("Absenteeism Report", reportData);
-    res.download(path, "absenteeism_report.pdf");
+    res.status(200);
+    res.send(reportData);
   } catch (error) {
     res.status(400);
     throw new Error(error.message);
@@ -208,20 +239,59 @@ const generateLeaveManagementReport = asyncHandler(async (req, res) => {
   const { startDate, endDate } = req.query;
   try {
     const leaves = await Leave.find({
-      startDate: { $gte: startDate, $lte: endDate },
+      createdAt: { $gte: startDate, $lte: endDate },
     })
-      .populate("user", "name")
+      .populate("user")
       .lean();
 
     const reportData = leaves.map((leave) => ({
-      name: leave.user.name,
-      startDate: leave.date,
-      endDate: leave.end_date,
+      name: `${leave.user.first_name} ${leave.user.last_name}`,
+      startDate: DateTime.fromISO(leave.date).toLocaleString({
+        weekday: "short",
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+      }),
+      endDate:
+        leave.end_date == undefined
+          ? "Not Set"
+          : DateTime.fromISO(leave.end_date.toISOString()).toLocaleString({
+              weekday: "short",
+              month: "short",
+              day: "2-digit",
+              year: "numeric",
+            }),
       status: leave.status,
     }));
 
-    const path = createPdf("Leave Management Report", reportData);
-    res.download(path, "leave_management_report.pdf");
+    const stream = res.writeHead(200, {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": "inline",
+    });
+
+    const organization = await Organization.findOne().lean();
+
+    const title = `Leave Report from ${DateTime.fromISO(
+      startDate
+    ).toLocaleString({
+      weekday: "short",
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    })} to ${DateTime.fromISO(endDate).toLocaleString({
+      weekday: "short",
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    })}`;
+
+    createPdf.leaveManagementReportPDF(
+      title,
+      reportData,
+      organization,
+      (chunk) => stream.write(chunk),
+      () => stream.end()
+    );
   } catch (error) {
     res.status(400);
     throw new Error(error.message);
