@@ -36,8 +36,17 @@ const generateDailyAttendanceReport = asyncHandler(async (req, res) => {
       "Content-Disposition": "inline",
     });
 
+    const title = `Daily Attendance Report on ${DateTime.fromISO(
+      date
+    ).toLocaleString({
+      weekday: "short",
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    })}`;
+
     createPdf.dailyAttendanceReportPDF(
-      "Daily Attendance Report",
+      title,
       date,
       reportData,
       organization,
@@ -53,25 +62,85 @@ const generateDailyAttendanceReport = asyncHandler(async (req, res) => {
 //@route GET /api/reports/attendanceSummaryReport
 //@access PRIVATE
 const generateAttendanceSummaryReport = asyncHandler(async (req, res) => {
+  const { startDate, endDate } = req.query;
   try {
+    // Fetch attendance records within the date range
     const attendances = await AttendanceDate.find({
-      date: { $gte: startDate, $lte: endDate },
+      createdAt: { $gte: startDate, $lte: endDate },
     })
-      .populate("user", "name")
+      .populate("user")
+      .lean();
+    // Fetch company information
+    const organization = await Organization.findOne().lean();
+    // Fetch leave records within the date range
+    const leaves = await Leave.find({
+      startDate: { $lte: endDate },
+      endDate: { $gte: startDate },
+    })
+      .populate("user")
       .lean();
 
+    // Create a summary object
     const summary = {};
 
+    // Calculate check-ins and check-outs
     attendances.forEach((att) => {
-      if (!summary[att.user.name]) {
-        summary[att.user.name] = { totalCheckIns: 0, totalCheckOuts: 0 };
+      const userName = `${att.user.first_name} ${att.user.last_name}`;
+      if (!summary[userName]) {
+        summary[userName] = {
+          totalCheckIns: 0,
+          totalCheckOuts: 0,
+          totalLeaves: 0,
+          user: userName,
+        };
       }
-      summary[att.user.name].totalCheckIns += 1;
-      summary[att.user.name].totalCheckOuts += 1;
+      summary[userName].totalCheckIns += 1;
+      summary[userName].totalCheckOuts += 1;
     });
 
-    const path = createPdf("Attendance Summary Report", summary);
-    res.download(path, "attendance_summary_report.pdf");
+    // Calculate total leaves
+    leaves.forEach((leave) => {
+      const userName = `${leave.user.first_name} ${leave.user.last_name}`;
+      if (!summary[userName]) {
+        summary[userName] = {
+          totalCheckIns: 0,
+          totalCheckOuts: 0,
+          totalLeaves: 0,
+          user: userName,
+        };
+      }
+      summary[userName].totalLeaves += 1;
+    });
+
+    // Convert the summary object into an array of objects
+    const summaryList = Object.values(summary);
+
+    const title = `Attendance Summary Report from ${DateTime.fromISO(
+      startDate
+    ).toLocaleString({
+      weekday: "short",
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    })} to ${DateTime.fromISO(endDate).toLocaleString({
+      weekday: "short",
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    })}`;
+
+    const stream = res.writeHead(200, {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": "inline",
+    });
+
+    createPdf.attendanceSummaryReportPDF(
+      title,
+      summaryList,
+      organization,
+      (chunk) => stream.write(chunk),
+      () => stream.end()
+    );
   } catch (error) {
     res.status(400);
     throw new Error(error.message);
