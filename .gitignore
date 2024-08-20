@@ -105,3 +105,6 @@ dist
 
 # api files
 /push_notification_keys.json
+
+push_notification_keys.json
+
