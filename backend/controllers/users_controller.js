@@ -124,7 +124,8 @@ const addUser = asyncHandler(async (req, res) => {
 // @route GET /api/users/login
 // @access Public
 const loginUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, device_token } = req.body;
+  console.log(req.body);
   const { error } = validateUserLogins(req.body);
   if (error) {
     res.status(400).json({ message: error.details[0].message });
@@ -145,8 +146,9 @@ const loginUser = asyncHandler(async (req, res) => {
       }
 
       await User.findByIdAndUpdate(user._id, {
-        tokens: [...oldTokens, { token, signedAt: Date.now().toString() }],
+        device_token: device_token,
       }).populate("role");
+
       res.set("access_token", token);
       res.status(201).json({
         _id: user.id,

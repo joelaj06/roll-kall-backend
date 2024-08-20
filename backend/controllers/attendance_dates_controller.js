@@ -7,13 +7,41 @@ const { addDays } = require("../utils/date_formatter.js");
 // @route -  POST /api/attendance_dates
 // @access - PRIVATE
 const checkIn = asyncHandler(async (req, res) => {
-  const { check_in, check_out, location } = req.body;
+  const { check_in, check_out, location, taskId, isCheckedIn } = req.body;
+  const now = new Date();
+  const checkInTime = now.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  if (isCheckedIn) {
+    const attendanceDate = await AttendanceDate({ taskId: taskId });
+    if (attendanceDate) {
+      res.status(200).json(attendanceDate);
+    } else {
+      res
+        .status(200)
+        .json({
+          checkIn: "",
+          checkOut: "",
+          location: "",
+          task: "",
+          user: "",
+          completed: false,
+          is_checked_in: false,
+        });
+    }
+    return;
+  }
 
   let checkIn = new AttendanceDate({
-    check_in,
+    check_in: checkInTime,
     check_out,
     location,
+    task: taskId,
     user: req.user.id,
+    completed: false,
+    is_checked_in: true,
   });
 
   await checkIn.save();
@@ -38,9 +66,16 @@ const checkOut = asyncHandler(async (req, res) => {
     } else {
       if (user.completed) throw new Error("User already checked out");
       if (user.id == attendanceDate.user) {
+        const payload = {
+          completed: true,
+          check_out: new Date().toLocaleTimeString("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
         const updatedCheckOut = await AttendanceDate.findByIdAndUpdate(
           req.params.id,
-          req.body,
+          payload,
           { new: true }
         );
         res.status(200).json(updatedCheckOut);
@@ -63,6 +98,7 @@ const getUserDates = asyncHandler(async (req, res) => {
   let endDate = addDays(req.query.end_date, 1);
   let startDate = req.query.start_date;
   const startIndex = (page - 1) * limit;
+  let totalCount = 0;
   let query = {};
   if (req.params.id) {
     if (startDate && endDate)
@@ -75,16 +111,29 @@ const getUserDates = asyncHandler(async (req, res) => {
         user: req.params.id,
       };
     }
+    totalCount = await AttendanceDate.countDocuments(query);
+
     const userDates = await AttendanceDate.find(query)
       .limit(limit)
       .skip(startIndex);
     if (userDates) {
+      const totalPages = Math.ceil(totalCount / limit);
+      // Set pagination information in the headers
+      res.set(
+        "x-pagination",
+        JSON.stringify({
+          totalPages: totalPages,
+          pageCount: page,
+          totalCount: totalCount,
+        })
+      );
       res.status(200).json(userDates);
     }
   } else {
     const userDates = await AttendanceDate.find({
       createdAt: { $gte: startDate, $lte: endDate },
     });
+
     res.status(200).json(userDates);
   }
 });

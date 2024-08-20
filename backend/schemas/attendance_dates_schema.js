@@ -9,11 +9,19 @@ const attendance_date_schema = new mongoose.Schema(
       default: Date.now(),
     },
     location: String,
+    task: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: "Task",
+    },
     user: {
       type: mongoose.SchemaTypes.ObjectId,
       ref: "User",
     },
     completed: {
+      type: Boolean,
+      default: false,
+    },
+    is_checked_in: {
       type: Boolean,
       default: false,
     },

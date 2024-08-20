@@ -11,9 +11,10 @@ const task_schema = new mongoose.Schema(
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
     attachments: [String],
     location: {
-      long: { type: String }, //TODO set location required
-      lat: { type: String },
-      radius: { type: String },
+      long: { type: Number }, //TODO set location required
+      lat: { type: Number },
+      radius: { type: Number },
+      address: String,
     },
     start_date: Date,
     due_date: Date,

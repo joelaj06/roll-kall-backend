@@ -14,7 +14,18 @@ const { DateTime } = luxon;
 const generateDailyAttendanceReport = asyncHandler(async (req, res) => {
   const { date } = req.query;
   try {
-    const attendances = await AttendanceDate.find({ createdAt: date })
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      res.status(400).send("Invalid date format");
+      return;
+    }
+
+    // Create a range that covers the entire day
+    const startOfDay = new Date(parsedDate.setUTCHours(0, 0, 0, 0));
+    const endOfDay = new Date(parsedDate.setUTCHours(23, 59, 59, 999));
+    const attendances = await AttendanceDate.find({
+      createdAt: { $gte: startOfDay, $lte: endOfDay },
+    })
       .populate("user")
       .lean();
 
@@ -33,7 +44,7 @@ const generateDailyAttendanceReport = asyncHandler(async (req, res) => {
 
     const stream = res.writeHead(200, {
       "Content-Type": "application/pdf",
-      "Content-Disposition": "inline",
+      "Content-Disposition": "attachment;filename=report.pdf",
     });
 
     const title = `Daily Attendance Report on ${DateTime.fromISO(
@@ -177,7 +188,7 @@ const generateGeolocationReport = asyncHandler(async (req, res) => {
       "Content-Disposition": "inline",
     });
 
-    const title = `Attendance Summary Report from ${DateTime.fromISO(
+    const title = `Location Report from ${DateTime.fromISO(
       startDate
     ).toLocaleString({
       weekday: "short",

@@ -6,6 +6,7 @@ const {
   getTask,
   deleteTask,
   addComment,
+  getUserTasks,
   updateComment,
 } = require("../controllers/tasks_controller");
 const { protect } = require("../middleware/auth_middleware");
@@ -24,5 +25,6 @@ router
   .route("/:id")
   .put(protect, checkPermission("CanUpdateTask"), updateTask)
   .delete(protect, checkPermission("CanDeleteTask"), deleteTask);
+router.get("/user/:id", protect, checkPermission("CanViewTasks"), getUserTasks);
 
 module.exports = router;

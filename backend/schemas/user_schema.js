@@ -1,30 +1,31 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema({
-  first_name : String,
-  last_name : String,
-  email : String, 
-  password : String,
-  phone : String , 
-  role : {
-    type : mongoose.SchemaTypes.ObjectId,
-    ref : 'Role'
+const userSchema = new mongoose.Schema(
+  {
+    first_name: String,
+    last_name: String,
+    email: String,
+    password: String,
+    phone: String,
+    role: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: "Role",
+    },
+    address: String,
+    device_token: String,
+    date_of_birth: Date,
+    programme: String,
+    status: String,
+    level: String,
+    work_id: String,
+    imgUrl: String,
+    gender: String,
+    job_title: String,
   },
-  address : String, 
-  date_of_birth : Date,
-  programme : String,
-  status : String,
-  level : String, 
-  tokens : [{type : Object}],
-  work_id : String,
-  imgUrl : String,
-  gender : String,
-  job_title : String,
-
-},{
-  timestamps: true
-});
-
+  {
+    timestamps: true,
+  }
+);
 
 /* 
  unpopulated user

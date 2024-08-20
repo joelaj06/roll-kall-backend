@@ -63,6 +63,52 @@ const getTasks = asyncHandler(async (req, res) => {
   }
 });
 
+//@desc Get user tasks
+//@route GET /api/tasks/user/:id
+//@access PRIVATE
+const getUserTasks = asyncHandler(async (req, res) => {
+  const searchQuery = req.query.search || "";
+  const start_date = req.query.start_date
+    ? new Date(req.query.start_date)
+    : null;
+  const end_date = req.query.end_date ? new Date(req.query.end_date) : null;
+  const userId = req.params.id;
+
+  try {
+    let query = {
+      assignee: userId,
+    };
+
+    // Apply search filter
+    if (searchQuery) {
+      query.$or = [
+        { title: { $regex: searchQuery, $options: "i" } }, // Case-insensitive search on task title
+        { description: { $regex: searchQuery, $options: "i" } }, // Case-insensitive search on task description
+      ];
+    }
+
+    // Apply date filter
+    if (start_date && end_date) {
+      query.createdAt = { $gte: start_date, $lte: end_date };
+    } else if (start_date) {
+      query.createdAt = { $gte: start_date };
+    } else if (end_date) {
+      query.createdAt = { $lte: end_date };
+    }
+
+    const tasks = await Task.find(query)
+      .populate("assignee", "-password -tokens")
+      .populate("reviewer", "-password -tokens")
+      .populate("comments");
+    // .populate("location");
+
+    res.status(200).json(tasks);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 //@desc Create new task
 //@route POST /api/tasks
 //@access PRIVATE
@@ -200,6 +246,7 @@ const deleteTask = asyncHandler(async (req, res) => {
 //@access PRIVATE
 const getTask = asyncHandler(async (req, res) => {
   const task = await Task.findById(req.params.id);
+
   if (task) {
     res.status(200).json(task);
   } else {
@@ -211,6 +258,7 @@ const getTask = asyncHandler(async (req, res) => {
 module.exports = {
   getTasks,
   addTask,
+  getUserTasks,
   updateTask,
   deleteTask,
   getTask,

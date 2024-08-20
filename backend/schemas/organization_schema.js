@@ -2,16 +2,20 @@ const mongoose = require("mongoose");
 
 const organization_schema = new mongoose.Schema({
   name: {
-    type : String, 
-    required : true,
+    type: String,
+    required: true,
   },
-  description : String,
+  description: String,
   code: String,
-  location: 
-    {
-      long: String,
-      lat: String,
-    },
+  radius: {
+    radius: Number,
+    label: String,
+  },
+  location: {
+    long: Number,
+    lat: Number,
+    address: String,
+  },
   arrival_time: String,
   departure_time: String,
   motto: String,
