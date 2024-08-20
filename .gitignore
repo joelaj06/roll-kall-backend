@@ -102,3 +102,6 @@ dist
 
 # TernJS port file
 .tern-port
+
+# api files
+/push_notification_keys.json
