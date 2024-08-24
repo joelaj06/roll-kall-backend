@@ -18,6 +18,11 @@ const task_schema = new mongoose.Schema(
     },
     start_date: Date,
     due_date: Date,
+    status: {
+      type: String,
+      enum: ["pending", "completed"],
+      default: "pending",
+    },
   },
   {
     timestamps: true,

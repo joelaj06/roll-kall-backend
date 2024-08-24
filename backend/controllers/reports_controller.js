@@ -37,9 +37,11 @@ const generateDailyAttendanceReport = asyncHandler(async (req, res) => {
       name: `${att.user.first_name} ${att.user.last_name}`,
       date: DateTime.fromISO(att.createdAt.toISOString()).toLocaleString({}),
       checkIn: att.check_in,
-      checkOut: att.check_out,
-      workingHours: calculateWorkingHours(att.check_in, att.check_out),
-      location: "Not set",
+      checkOut: att.check_out || "--",
+      workingHours: att.check_out
+        ? calculateWorkingHours(att.check_in, att.check_out)
+        : "--",
+      location: att.location || "Not Set",
     }));
 
     const stream = res.writeHead(200, {

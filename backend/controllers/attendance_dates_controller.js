@@ -2,6 +2,8 @@ const asyncHandler = require("express-async-handler");
 const { AttendanceDate } = require("../models/attendance_date_model.js");
 const { User } = require("../models/user_model.js");
 const { addDays } = require("../utils/date_formatter.js");
+const mongo = require("mongodb");
+const { Task } = require("../models/task_model.js");
 
 // @desc - get user's check in time
 // @route -  POST /api/attendance_dates
@@ -15,21 +17,22 @@ const checkIn = asyncHandler(async (req, res) => {
   });
 
   if (isCheckedIn) {
-    const attendanceDate = await AttendanceDate({ taskId: taskId });
+    const attendanceDate = await AttendanceDate.findOne({
+      task: taskId, //mongo.ObjectId(taskId),
+    });
     if (attendanceDate) {
       res.status(200).json(attendanceDate);
     } else {
-      res
-        .status(200)
-        .json({
-          checkIn: "",
-          checkOut: "",
-          location: "",
-          task: "",
-          user: "",
-          completed: false,
-          is_checked_in: false,
-        });
+      res.status(200).json({
+        checkIn: "",
+        checkOut: "",
+        location: "",
+        task: "",
+        user: "",
+        completed: false,
+        is_checked_in: false,
+        _id: "",
+      });
     }
     return;
   }
@@ -57,7 +60,7 @@ const checkOut = asyncHandler(async (req, res) => {
   try {
     let user = undefined;
     user = await User.findById(req.user.id);
-    let attendanceDate = await AttendanceDate.findById(req.params.id);
+    const attendanceDate = await AttendanceDate.findById(req.params.id);
     if (!attendanceDate) {
       throw new Error("Attendance Date Not Found");
     }
@@ -78,6 +81,9 @@ const checkOut = asyncHandler(async (req, res) => {
           payload,
           { new: true }
         );
+        await Task.findByIdAndUpdate(attendanceDate.task, {
+          status: "completed",
+        });
         res.status(200).json(updatedCheckOut);
       } else {
         res.status(401).json({ message: "Unauthorized" });
