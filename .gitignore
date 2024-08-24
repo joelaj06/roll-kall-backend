@@ -71,6 +71,7 @@ typings/
 
 # dotenv environment variables file
 .env.test
+.env
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -104,8 +105,8 @@ dist
 .tern-port
 
 # api files
-/push_notification_keys.json
 
-push_notification_keys.json
+
+push_notification_key.json
 
 private/

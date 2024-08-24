@@ -1,6 +1,7 @@
 const e = require("express");
 const asyncHandler = require("express-async-handler");
 const { Organization } = require("../models/organization_model");
+const { uploadImage } = require("../services/bucket/cloudinary");
 
 //@desc fetch organization data
 //@route GET /api/organization
@@ -55,9 +56,20 @@ const addOrganization = asyncHandler(async (req, res) => {
 const updateOrganization = asyncHandler(async (req, res) => {
   const organization = await Organization.findById(req.params.id);
   if (organization) {
+    let imgUrl = req.body.logo || "";
+
+    if (!imgUrl.startsWith("http")) {
+      // Image is in base64 format, so upload it
+      imgUrl = await uploadImage(imgUrl);
+    }
+
+    const body = {
+      ...req.body,
+      logo: imgUrl,
+    };
     const updateOrganization = await Organization.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      body,
       { new: true }
     );
 

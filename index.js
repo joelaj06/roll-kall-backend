@@ -17,10 +17,12 @@ const tasks = require("./backend/routes/tasks");
 const reports = require("./backend/routes/reports");
 const chats = require("./backend/routes/chats");
 const socketIo = require("socket.io"); // Import the Socket.io library
+const { configCloudinary } = require("./backend/services/bucket/cloudinary.js");
 
 const app = express();
 
 connectToDatabase();
+configCloudinary();
 
 app.use(express.json());
 

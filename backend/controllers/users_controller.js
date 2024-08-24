@@ -6,6 +6,7 @@ const {
   validateUser,
   validateUserLogins,
 } = require("../models/user_model");
+const { uploadImage } = require("../services/bucket/cloudinary");
 
 // @desc Get all users
 // @route GET /api/users
@@ -223,7 +224,18 @@ const updateUser = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("User not found");
   } else {
-    const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
+    let imgUrl = req.body.imgUrl || "";
+
+    if (imgUrl.startsWith("data:image/")) {
+      // Image is in base64 format, so upload it
+      imgUrl = await uploadImage(imgUrl);
+    }
+
+    const body = {
+      ...req.body,
+      imgUrl,
+    };
+    const updatedUser = await User.findByIdAndUpdate(req.params.id, body, {
       new: true,
     });
     res.status(200).json({
