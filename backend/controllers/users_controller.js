@@ -80,6 +80,7 @@ const addUser = asyncHandler(async (req, res) => {
         last_name: req.body.last_name,
         email: req.body.email,
         password: hashedPassword,
+
         phone: req.body.phone,
         role: req.body.role,
         address: req.body.address,
@@ -89,7 +90,7 @@ const addUser = asyncHandler(async (req, res) => {
         imgUrl: req.body.imgUrl,
         gender: req.body.gender,
         job_title: req.body.job_title,
-        status: req.body.status,
+        status: "active",
       });
 
       await user.save();
@@ -224,9 +225,9 @@ const updateUser = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("User not found");
   } else {
-    let imgUrl = req.body.imgUrl || "";
+    let imgUrl = req.body.image || "";
 
-    if (imgUrl.startsWith("data:image/")) {
+    if (!imgUrl.startsWith("http")) {
       // Image is in base64 format, so upload it
       imgUrl = await uploadImage(imgUrl);
     }

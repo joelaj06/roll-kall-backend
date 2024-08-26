@@ -1,3 +1,5 @@
+const { changeToSeconds } = require("./date_formatter");
+
 function sortDates(unsortedDates) {
   return unsortedDates.sort((a, b) => {
     a = new Date(a.date);
@@ -24,11 +26,6 @@ function convertToHMInString(seconds) {
   const hours = Math.floor(Number(seconds) / 3600);
   const minutes = Math.floor((Number(seconds) % 3600) / 60);
   return `${hours}hr ${minutes}m`;
-}
-function changeToSeconds(time) {
-  /// time should be in the format 00:00
-  const [hours, minutes] = time.split(":").map(Number);
-  return hours * 3600 + minutes * 60;
 }
 
 module.exports = {

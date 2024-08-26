@@ -41,6 +41,8 @@ const dailyAttendanceReportPDF = async (
     doc.image(logo, { fit: [100, 100], align: "center" });
   }
 
+  doc.moveDown(2);
+
   // Organization Information
   doc.fontSize(12).font("Times-Roman");
   doc.fontSize(14).text(organization.name, { align: "center" });
@@ -113,6 +115,8 @@ const attendanceSummaryReportPDF = async (
     const logo = Buffer.from(response.data, "binary");
     doc.image(logo, { fit: [100, 100], align: "center" });
   }
+
+  doc.moveDown(2);
 
   // Organization Information
   doc.fontSize(12).font("Times-Roman");
@@ -187,6 +191,8 @@ const leaveManagementReportPDF = async (
     const logo = Buffer.from(response.data, "binary");
     doc.image(logo, { fit: [100, 100], align: "center" });
   }
+
+  doc.moveDown(2);
 
   // Organization Information
   doc.fontSize(12).font("Times-Roman");

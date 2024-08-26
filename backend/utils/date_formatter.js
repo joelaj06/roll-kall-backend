@@ -24,27 +24,29 @@ function getAllPreviousDatesByDays(days) {
   return dates;
 }
 
-function changeToSeconds(time){
-  /// time should be in the format 00:00
-  let hours = time.split(':')[0];
-  let mins = time.split(':')[1];
-  let secs = (hours*60*60) + (mins*60);
+function changeToSeconds(date) {
+  const newDate = new Date(date); // assuming date is a string in the format "YYYY-MM-DD HH:MM:SS"
+  // convert to milliseconds, subtract from current time, and divide by 1000 to get seconds
+  const secs = Math.floor(newDate.getTime() / 1000);
   return secs;
 }
 
-
-
 function convertToHM(value) {
-    const sec = parseInt(value, 10);
-    let hours   = Math.floor(sec / 3600);
-    let minutes = Math.floor((sec - (hours * 3600)) / 60); 
-    let seconds = sec - (hours * 3600) - (minutes * 60); 
-    if (hours   < 10) {hours   = "0"+hours;}
-    if (minutes < 10) {minutes = "0"+minutes;}
-    if (seconds < 10) {seconds = "0"+seconds;}
-    return hours+':'+minutes;
+  const sec = parseInt(value, 10);
+  let hours = Math.floor(sec / 3600);
+  let minutes = Math.floor((sec - hours * 3600) / 60);
+  let seconds = sec - hours * 3600 - minutes * 60;
+  if (hours < 10) {
+    hours = "0" + hours;
+  }
+  if (minutes < 10) {
+    minutes = "0" + minutes;
+  }
+  if (seconds < 10) {
+    seconds = "0" + seconds;
+  }
+  return hours + ":" + minutes;
 }
-
 
 module.exports = {
   addDays,

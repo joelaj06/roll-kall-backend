@@ -4,6 +4,7 @@ const attendance_date_schema = new mongoose.Schema(
   {
     check_in: String,
     check_out: String,
+    workingHrs: String,
     start_date: {
       type: Date,
       default: Date.now(),

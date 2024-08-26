@@ -85,7 +85,8 @@ const averageCheckOutOfTheWeek = asyncHandler(async (req, res) => {
     const checkOutDates = attendanceDates.map(({ check_out, createdAt }) => {
       let date = createdAt.toISOString().split("T")[0];
       let checkOut = changeToSeconds(check_out);
-      return { checkOut, date };
+      const checksInSecs = checkOut || 0;
+      return { checksInSecs, date };
     });
 
     const keys = ["date"];
@@ -112,7 +113,7 @@ const averageCheckOutOfTheWeek = asyncHandler(async (req, res) => {
     }, []);
 
     const averageTimes = results.map(({ checkOut, date }) => {
-      let avgCheckOutTime = checkOut; //convertToHM(checkOut);
+      let avgCheckOutTime = checkOut || 0; //convertToHM(checkOut);
       return { avgCheckOutTime, date };
     });
 

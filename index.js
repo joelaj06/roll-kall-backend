@@ -24,6 +24,8 @@ const app = express();
 connectToDatabase();
 configCloudinary();
 
+app.use(express.json({ limit: "3mb" }));
+
 app.use(express.json());
 
 //enable CORS for all routes
