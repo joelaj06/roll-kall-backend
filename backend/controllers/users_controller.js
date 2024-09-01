@@ -127,7 +127,7 @@ const addUser = asyncHandler(async (req, res) => {
 // @access Public
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password, device_token } = req.body;
-  console.log(req.body);
+
   const { error } = validateUserLogins(req.body);
   if (error) {
     res.status(400).json({ message: error.details[0].message });
@@ -216,18 +216,17 @@ const getUser = asyncHandler(async (req, res) => {
 // @access Private
 const updateUser = asyncHandler(async (req, res) => {
   let user = undefined;
-  try {
-    user = await User.findById(req.params.id);
-  } catch (error) {
-    console.log(error);
-  }
+
+  user = await User.findById(req.params.id);
+  console.log(user);
+
   if (user == undefined) {
     res.status(400);
     throw new Error("User not found");
   } else {
     let imgUrl = req.body.image || "";
 
-    if (!imgUrl.startsWith("http")) {
+    if (!imgUrl.startsWith("http") && imgUrl != "") {
       // Image is in base64 format, so upload it
       imgUrl = await uploadImage(imgUrl);
     }
@@ -236,9 +235,11 @@ const updateUser = asyncHandler(async (req, res) => {
       ...req.body,
       imgUrl,
     };
+
     const updatedUser = await User.findByIdAndUpdate(req.params.id, body, {
       new: true,
     });
+    console.log(updatedUser);
     res.status(200).json({
       _id: updatedUser.id,
       first_name: updatedUser.first_name,
@@ -266,8 +267,8 @@ const deleteUser = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("User not found");
   }
-  await user.remove();
-  res.status(200).json({ id: req.params.id });
+  // await User.findByIdAndDelete(req.params.id);
+  res.status(200).json(user);
 });
 
 // Generate JWT

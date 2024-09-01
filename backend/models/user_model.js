@@ -13,16 +13,13 @@ function validateUser(user) {
       .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
       .required(),
     confirmPassword: Joi.ref("password"),
-    gender: Joi.string(),
-    // index_number : Joi.string().min(5).max(50).required(),
+    gender: Joi.string().allow(null),
     phone: Joi.string().min(10).max(15).required(),
-    role: Joi.string().required(),
-    address: Joi.string().min(5).max(50).required(),
-    job_title: Joi.string().required(),
-    imgUrl: Joi.string().allow(null),
-    status: Joi.string(),
-    // programme : Joi.string().min(5).max(50).required(),
-    // level : Joi.string().min(1).max(50).required(),
+    // role: Joi.string().required().allow(null).allow(""),
+    address: Joi.string().min(5).max(50).required().allow("").allow(null),
+    job_title: Joi.string().required().allow(null).allow(""),
+    imgUrl: Joi.string().allow(null).allow(""),
+    status: Joi.string().allow(null).allow(""),
   });
 
   const validate = schema.validate(user);

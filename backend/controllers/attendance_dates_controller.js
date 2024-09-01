@@ -11,7 +11,7 @@ const { Leave } = require("../models/leave_model.js");
 // @route -  POST /api/attendance_dates
 // @access - PRIVATE
 const checkIn = asyncHandler(async (req, res) => {
-  const { check_in, check_out, location, taskId, isCheckedIn } = req.body;
+  const { check_out, location, taskId, isCheckedIn } = req.body;
   const now = new Date();
   const checkInTime = now;
 
@@ -20,11 +20,21 @@ const checkIn = asyncHandler(async (req, res) => {
       task: taskId, //mongo.ObjectId(taskId),
     });
     if (attendanceDate) {
-      res.status(200).json(attendanceDate);
+      res.status(200).json({
+        ...attendanceDate._doc,
+        check_in: new Date(attendanceDate.check_in).toLocaleTimeString(
+          "en-GB",
+          {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }
+        ),
+      });
     } else {
       res.status(200).json({
-        checkIn: "",
-        checkOut: "",
+        check_in: "",
+        check_out: "",
         location: "",
         task: "",
         user: "",
@@ -53,6 +63,7 @@ const checkIn = asyncHandler(async (req, res) => {
       check_in: new Date(checkIn.check_in).toLocaleTimeString("en-GB", {
         hour: "2-digit",
         minute: "2-digit",
+        hour12: true,
       }),
     });
   }
@@ -93,6 +104,7 @@ const checkOut = asyncHandler(async (req, res) => {
             {
               hour: "2-digit",
               minute: "2-digit",
+              hour12: true,
             }
           ),
           check_out: new Date(updatedCheckOut.check_out).toLocaleTimeString(
@@ -100,6 +112,7 @@ const checkOut = asyncHandler(async (req, res) => {
             {
               hour: "2-digit",
               minute: "2-digit",
+              hour12: true,
             }
           ),
         });
@@ -158,11 +171,13 @@ const getUserDates = asyncHandler(async (req, res) => {
         check_in: new Date(date.check_in).toLocaleTimeString("en-GB", {
           hour: "2-digit",
           minute: "2-digit",
+          hour12: true,
         }),
         check_out: date.check_out
           ? new Date(date.check_out).toLocaleTimeString("en-GB", {
               hour: "2-digit",
               minute: "2-digit",
+              hour12: true,
             })
           : null,
         workingHrs: date.check_out
