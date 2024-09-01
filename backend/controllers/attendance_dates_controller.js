@@ -59,7 +59,7 @@ const checkIn = asyncHandler(async (req, res) => {
   await checkIn.save();
   if (checkIn) {
     res.status(201).json({
-      ...checkIn,
+      ...checkIn._doc,
       check_in: new Date(checkIn.check_in).toLocaleTimeString("en-GB", {
         hour: "2-digit",
         minute: "2-digit",
@@ -98,7 +98,7 @@ const checkOut = asyncHandler(async (req, res) => {
           status: "completed",
         });
         res.status(200).json({
-          ...updatedCheckOut,
+          ...updatedCheckOut._doc,
           check_in: new Date(updatedCheckOut.check_in).toLocaleTimeString(
             "en-GB",
             {
@@ -115,6 +115,9 @@ const checkOut = asyncHandler(async (req, res) => {
               hour12: true,
             }
           ),
+          workingHrs: date.check_out
+            ? calculateWorkingHours(date.check_in, date.check_out)
+            : null,
         });
       } else {
         res.status(401).json({ message: "Unauthorized" });
