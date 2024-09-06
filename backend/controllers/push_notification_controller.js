@@ -13,6 +13,7 @@ const sendPushNotification = (payload) => {
       .messaging()
       .send(payload)
       .then((response) => {
+        console.log("Notification sent successfully");
         console.log(response);
       })
       .catch((err) => console.log(err));

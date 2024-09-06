@@ -2,6 +2,8 @@ const asyncHandler = require("express-async-handler");
 
 const { Task } = require("../models/task_model");
 const { Comment } = require("../models/comment_model");
+const { User } = require("../models/user_model");
+const { sendPushNotification } = require("./push_notification_controller");
 
 //@desc Get all tasks
 //@route GET /api/tasks
@@ -141,6 +143,23 @@ const addTask = asyncHandler(async (req, res) => {
   try {
     await task.save();
     if (task) {
+      const assignee = await User.findById(task.assignee);
+      const user = req.user;
+      if (assignee.device_token) {
+        const notification = {
+          title: "New Task Assigned",
+          body: `${user.first_name} ${user.last_name} has assigned you a new task: ${task.title}.`,
+        };
+        const data = {
+          route: "/task",
+        };
+        const payload = {
+          notification,
+          data,
+          token: assignee.device_token,
+        };
+        sendPushNotification(payload);
+      }
       res.status(201).json(task);
     } else {
       res.status(400);
@@ -162,6 +181,23 @@ const updateTask = asyncHandler(async (req, res) => {
       new: true,
     });
     if (updatedTask) {
+      const assignee = await User.findById(updatedTask.assignee);
+      const user = req.user;
+      if (assignee.device_token) {
+        const notification = {
+          title: `Task Updated by ${user.first_name} ${user.last_name}`,
+          body: `${user.first_name} ${user.last_name} has updated your task: ${updatedTask.title}.`,
+        };
+        const data = {
+          route: "/task",
+        };
+        const payload = {
+          notification,
+          data,
+          token: assignee.device_token,
+        };
+        sendPushNotification(payload);
+      }
       res.status(200).json(updatedTask);
     } else {
       res.status(400);
