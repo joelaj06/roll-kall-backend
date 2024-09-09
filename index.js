@@ -16,6 +16,7 @@ const dashboard = require("./backend/routes/dasboard.js");
 const tasks = require("./backend/routes/tasks");
 const reports = require("./backend/routes/reports");
 const chats = require("./backend/routes/chats");
+const hello_wold = require("./backend/routes/hello_wold");
 const socketIo = require("socket.io"); // Import the Socket.io library
 const { configCloudinary } = require("./backend/services/bucket/cloudinary.js");
 
@@ -33,6 +34,7 @@ app.use(cors());
 
 const port = process.env.PORT || 3000;
 
+app.use("/hello_wold", hello_wold);
 app.use("/api/users", users);
 app.use("/api/attendance_dates", attendance_dates);
 app.use("/api/roles", roles);

@@ -32,6 +32,7 @@ const postMessage = asyncHandler(async (req, res) => {
       data,
       token: receiver.device_token,
     };
+
     sendPushNotification(payload);
   }
 

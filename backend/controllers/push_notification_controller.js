@@ -1,10 +1,7 @@
 const admin = require("firebase-admin");
 const dotenv = require("dotenv").config({ path: "./.env" });
 
-const serviceAccount =
-  process.env.NODE_ENV === "production"
-    ? require("/etc/secrets/push_notification_key.json")
-    : require("../../push_notification_key.json");
+const serviceAccount = JSON.parse(process.env.FIREBASE_API_SECRETE);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
