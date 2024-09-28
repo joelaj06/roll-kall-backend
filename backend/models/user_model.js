@@ -15,7 +15,7 @@ function validateUser(user) {
     confirmPassword: Joi.ref("password"),
     gender: Joi.string().allow(null),
     phone: Joi.string().min(10).max(15).required(),
-    // role: Joi.string().required().allow(null).allow(""),
+    role: Joi.string().required().allow(null).allow(""),
     address: Joi.string().min(5).max(50).required().allow("").allow(null),
     job_title: Joi.string().required().allow(null).allow(""),
     imgUrl: Joi.string().allow(null).allow(""),

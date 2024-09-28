@@ -66,7 +66,9 @@ const getUsers = asyncHandler(async (req, res) => {
 const addUser = asyncHandler(async (req, res) => {
   const { error } = validateUser(req.body);
   if (error) {
-    res.status(400).json({ message: "Cannot process resquest, invalid field" });
+    res.status(400);
+    throw new Error("Cannot process resquest, invalid field");
+    // .json({ message: "Cannot process resquest, invalid field" });
   } else {
     let user = await User.findOne({ email: req.body.email });
     if (user) {
@@ -80,7 +82,6 @@ const addUser = asyncHandler(async (req, res) => {
         last_name: req.body.last_name,
         email: req.body.email,
         password: hashedPassword,
-
         phone: req.body.phone,
         role: req.body.role,
         address: req.body.address,
