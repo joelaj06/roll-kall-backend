@@ -189,7 +189,7 @@ const updateTask = asyncHandler(async (req, res) => {
           body: `${user.first_name} ${user.last_name} has updated your task: ${updatedTask.title}.`,
         };
         const data = {
-          route: "/task",
+          route: "/base",
         };
         const payload = {
           notification,

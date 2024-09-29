@@ -58,15 +58,19 @@ const updateOrganization = asyncHandler(async (req, res) => {
   if (organization) {
     let imgUrl = req.body.logo || "";
 
-    if (!imgUrl.startsWith("http")) {
+    if (imgUrl != "" && !imgUrl.startsWith("http")) {
       // Image is in base64 format, so upload it
       imgUrl = await uploadImage(imgUrl);
+    } else {
+      imgUrl = req.body.logo;
     }
+    console.log(req.body);
 
     const body = {
       ...req.body,
       logo: imgUrl,
     };
+
     const updateOrganization = await Organization.findByIdAndUpdate(
       req.params.id,
       body,

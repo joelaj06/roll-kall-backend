@@ -51,7 +51,9 @@ const getUsers = asyncHandler(async (req, res) => {
 
     res.status(200).json(users);
   } else {
-    const user = await User.findById(req.params.id).select("-password");
+    const user = await User.findById(req.params.id)
+      .select("-password")
+      .populate("role");
     if (user) {
       res.status(200).json(user);
     } else {
@@ -133,7 +135,8 @@ const loginUser = asyncHandler(async (req, res) => {
   if (error) {
     res.status(400).json({ message: error.details[0].message });
   } else {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).populate("role");
+
     if (user && (await bcrypt.compare(password, user.password))) {
       const token = generateToken(user._id);
 
@@ -154,18 +157,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
       res.set("access_token", token);
       res.status(201).json({
-        _id: user.id,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        email: user.email,
-        index_number: user.index_number,
-        phone: user.phone,
-        role: user.role,
-        address: user.address,
-        date_of_birth: user.date_of_birth,
-        programme: user.programme,
-        level: user.level,
-        status: user.status,
+        ...user._doc,
         token: token,
       });
     } else {
