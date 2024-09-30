@@ -260,7 +260,7 @@ const deleteUser = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("User not found");
   }
-  // await User.findByIdAndDelete(req.params.id);
+  await User.findByIdAndDelete(req.params.id);
   res.status(200).json(user);
 });
 
@@ -288,6 +288,29 @@ const logout = asyncHandler(async (req, res) => {
     }
   }
 });
+
+const changePassword = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id);
+  if (user) {
+    const salt = await bcrypt.genSalt(10);
+    const oldPassword = req.body.oldPassword;
+    const hashedOldPassword = await bcrypt.hash(oldPassword, salt);
+    const passwordMatch = bcrypt.compare(hashedOldPassword, user.password);
+    if (!passwordMatch) {
+      res.status(400);
+      throw new Error("Old password is incorrect");
+    }
+
+    const hashedPassword = await bcrypt.hash(req.body.password, salt);
+    user.password = hashedPassword;
+    await user.save();
+    res.status(200).json({ message: "Password changed successfully" });
+  } else {
+    res.status(400);
+    throw new Error("User not found");
+  }
+});
+
 module.exports = {
   getUsers,
   addUser,
@@ -296,4 +319,5 @@ module.exports = {
   loginUser,
   getUser,
   logout,
+  changePassword,
 };

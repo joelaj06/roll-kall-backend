@@ -58,6 +58,9 @@ const checkIn = asyncHandler(async (req, res) => {
 
   await checkIn.save();
   if (checkIn) {
+    await Task.findByIdAndUpdate(taskId, {
+      status: "progress",
+    });
     res.status(201).json({
       ...checkIn._doc,
       check_in: new Date(checkIn.check_in).toLocaleTimeString("en-GB", {
