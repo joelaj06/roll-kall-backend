@@ -13,6 +13,7 @@ const { protect } = require("../middleware/auth_middleware");
 const { checkPermission } = require("../middleware/permission_middleware");
 const router = express.Router();
 
+router.put("/change-password", protect, changePassword);
 router.post("/", addUser);
 router.post("/login", loginUser);
 router.post("/logout", protect, logout);
@@ -22,6 +23,5 @@ router
   .route("/:id")
   .put(protect, checkPermission("CanUpdateUser"), updateUser)
   .delete(protect, checkPermission("CanDeleteUser"), deleteUser);
-router.post("/change-password", protect, changePassword);
 
 module.exports = router;

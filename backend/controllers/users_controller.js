@@ -291,11 +291,13 @@ const logout = asyncHandler(async (req, res) => {
 
 const changePassword = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id);
+  console.log(user.password);
   if (user) {
     const salt = await bcrypt.genSalt(10);
     const oldPassword = req.body.oldPassword;
-    const hashedOldPassword = await bcrypt.hash(oldPassword, salt);
-    const passwordMatch = bcrypt.compare(hashedOldPassword, user.password);
+
+    const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+
     if (!passwordMatch) {
       res.status(400);
       throw new Error("Old password is incorrect");
